@@ -8,6 +8,7 @@ import styles from "./Post.module.css";
 
 export function Post({ author, content, publishedAt }) {
   const [comments, setNewComment] = useState([]);
+  const [newCommentText, setNewCommentText] = useState("");
   const publishedDateFormatted = format(
     publishedAt,
     "d 'de' LLLL 'às' HH:mm'h'",
@@ -16,11 +17,24 @@ export function Post({ author, content, publishedAt }) {
     }
   );
 
+  const handleNewCommentChange = () => {
+    setNewCommentText(event.target.value);
+  };
+
   const handleCreateNewComment = () => {
     event.preventDefault();
-    const newCommentText = event.target.comment.value;
+
+    if (!newCommentText) return;
     setNewComment([newCommentText, ...comments]);
-    event.target.comment.value = "";
+    setNewCommentText("");
+  };
+
+  const deleteComment = (commentsToDelete) => {
+    const commentListWithoutDeletedOne = comments.filter((comment) => {
+      return comment !== commentsToDelete;
+    });
+
+    setNewComment(commentListWithoutDeletedOne);
   };
 
   return (
@@ -52,14 +66,25 @@ export function Post({ author, content, publishedAt }) {
       </div>
       <form onSubmit={handleCreateNewComment} className={styles.commentForm}>
         <strong>Deixe o seu feedback...</strong>
-        <textarea name="comment" placeholder="Deixe um comentário..." />
+        <textarea
+          name="comment"
+          value={newCommentText}
+          placeholder="Deixe um comentário..."
+          onChange={handleNewCommentChange}
+        />
         <footer>
           <button type="submit">Comentar</button>
         </footer>
       </form>
       <div key={author.id} className={styles.commentList}>
         {comments.map((comment) => {
-          return <Comment content={comment} />;
+          return (
+            <Comment
+              key={comment}
+              content={comment}
+              onDeleteComment={deleteComment}
+            />
+          );
         })}
       </div>
     </article>
